@@ -502,7 +502,7 @@ function menuView(f: Fight): string {
       ${statusHtml(status)}
       ${messageHtml(message)}
       <div class="row tools"><a class="btn" href="${import.meta.env.BASE_URL}">Home</a>
-        ${switchTools('fight', { campaignId: campaignById(campaignId)?.id, hunters }).filter((x) => x.tool !== 'fight')
+        ${switchTools('fight', { campaignId: campaignById(campaignId)?.id ?? campaigns?.current, hunters }).filter((x) => x.tool !== 'fight')
           .map((x) => `<a class="btn" href="${x.href}">${esc(x.name)}</a>`).join('')}</div>
       <button class="btn alert" data-act="new-fight">New fight</button>
     </div>`);

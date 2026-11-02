@@ -29,7 +29,7 @@ const used = new Set<string>(Object.keys(await exportAll().catch(() => ({}))));
 export interface SwitchContext {
   /** The campaign in view, if it's on this device. */
   campaignId?: string | null;
-  /** This device's hunters; those in the campaign are linked by name in place of Hunter. */
+  /** This device's hunters; those in the campaign, and the one shown, are linked by name in place of Hunter. */
   hunters?: HunterLink[];
   /** The hunter shown on the hunter tracker. */
   hunterId?: string;
@@ -45,7 +45,7 @@ export function switchTools(tool: Tool, ctx: SwitchContext = {}): ToolLink[] {
   const { campaignId = null, hunters = [] } = ctx;
   return shown.flatMap(([t, name]): ToolLink[] => {
     if (t === 'hunters') {
-      const named = hunters.flatMap((h, i) => (campaignId && h.campaignId === campaignId ? [{
+      const named = hunters.flatMap((h, i) => ((campaignId && h.campaignId === campaignId) || (tool === t && h.id === ctx.hunterId) ? [{
         tool: t, name: hunterName(h, i), href: `${base}hunters/?hunter=${encodeURIComponent(h.id)}`,
         current: tool === t && h.id === ctx.hunterId,
       }] : []));

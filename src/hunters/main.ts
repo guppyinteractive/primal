@@ -52,7 +52,8 @@ const linked = new URLSearchParams(location.search).get('hunter');
 if (linked && state.hunters.some((x) => x.id === linked)) state.current = state.hunters.findIndex((x) => x.id === linked);
 if (linked) history.replaceState(null, '', location.pathname);
 /** The campaigns on this device, to choose from (read once; the campaign tracker owns them). */
-const campaigns = (await load<{ campaigns: { id: string; name: string }[] } | null>('campaign', null))?.campaigns ?? [];
+const campaignRecord = await load<{ campaigns: { id: string; name: string }[]; current: string } | null>('campaign', null);
+const campaigns = campaignRecord?.campaigns ?? [];
 /** The hunter's campaign, if it's on this device. */
 const campaignOf = (h: Hunter) => campaigns.find((x) => x.id === h.campaignId) ?? null;
 
@@ -101,7 +102,7 @@ function render(): void {
     </section>`).join('');
 
   root.innerHTML = `
-    ${topbar('Hunter tracker', 'hunters', { campaignId: campaign?.id, hunters: state.hunters, hunterId: h.id })}
+    ${topbar('Hunter tracker', 'hunters', { campaignId: campaign?.id ?? campaignRecord?.current, hunters: state.hunters, hunterId: h.id })}
     <main class="page hunters">
       <nav class="row tabs">${tabs}<button class="btn quiet small" data-act="add">+ Hunter</button></nav>
       <div class="cols">
