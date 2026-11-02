@@ -3,6 +3,7 @@
 .status { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
 .status .name { flex-basis: 100%; }
 .status .trial-on, .status .hunters { flex-basis: 100%; }
+.status .hunters { margin: 0; }
 .trial { display: grid; gap: 10px; }
 .defeat { width: 48px; font-weight: 700; }
 .slots { display: grid; gap: 4px; }

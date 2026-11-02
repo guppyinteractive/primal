@@ -1,6 +1,6 @@
 import '../shared/wire.css';
 import './campaign.css';
-import { DISCLAIMER, campaignHunterLinks, esc, newId, topbar, type HunterLink } from '../shared/util';
+import { DISCLAIMER, esc, newId, topbar, type HunterLink } from '../shared/util';
 import { load, save } from '../shared/store';
 import { protectIfInstalled } from '../shared/persist';
 import { oneTab } from '../shared/tabs';
@@ -65,7 +65,7 @@ if (linked) history.replaceState(null, '', location.pathname);
 /** The campaign shown. */
 let c = state.campaigns.find((x) => x.id === state.current) ?? state.campaigns[0];
 const persist = () => void save('campaign', state);
-/** This device's hunters, to link the ones in this campaign (read once; the hunter tracker owns them). */
+/** This device's hunters, for the top bar to link the ones in this campaign (read once; the hunter tracker owns them). */
 const hunters = (await load<{ hunters: HunterLink[] } | null>('hunters', null))?.hunters ?? [];
 
 function select(campaign: Campaign): void {
@@ -193,14 +193,14 @@ function render(): void {
     `<button class="toggle" aria-pressed="${x === c}" data-act="pick" data-i="${i}">${esc(label(x, i))}</button>`).join('');
 
   root.innerHTML = `
-    ${topbar('Campaign tracker', 'campaign')}
+    ${topbar('Campaign tracker', 'campaign', { campaignId: c.id, hunters })}
     <main class="page campaign">
       <nav class="row tabs">${tabs}<button class="btn quiet small" data-act="add">+ Campaign</button></nav>
       <section class="box status">
         <label class="field name"><span class="label">Campaign name</span>
           <input data-field="name" value="${esc(c.name)}" autocomplete="off"></label>
-        ${hunters.length ? `<div class="field hunters"><span class="label">Hunters</span>
-          <div class="row">${campaignHunterLinks(hunters, c.id) || '<span class="note">None yet. Choose this campaign on a hunter\'s page.</span>'}</div></div>` : ''}
+        ${hunters.length && !hunters.some((h) => h.campaignId === c.id)
+          ? '<p class="note hunters">To list hunters at the top, choose this campaign on their page in the Hunter tracker.</p>' : ''}
         <div class="field trial-on"><label class="toggle radio"><input type="checkbox" data-act="trial-on" ${c.trial.on ? 'checked' : ''}> Playing the Hunter's Trial</label></div>
         <div><div class="label">Now playing</div><div class="mid">Chapter ${chapter} · Tier ${tier}</div></div>
         <a class="btn primary" href="${BASE}fight/?tier=${tier}&campaign=${encodeURIComponent(c.id)}">Start a fight</a>

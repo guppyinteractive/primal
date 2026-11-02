@@ -2,7 +2,7 @@ import '../shared/wire.css';
 import './fight.css';
 import * as E from '../engine/fight';
 import { STATE_DEFS, STATE_IDS, type StateId } from '../engine/states';
-import { DISCLAIMER, campaignHunterLinks, esc, keepAwake, switchTools, topbar, type HunterLink } from '../shared/util';
+import { DISCLAIMER, esc, keepAwake, switchTools, topbar, type HunterLink } from '../shared/util';
 import { load, save } from '../shared/store';
 import { protectIfInstalled } from '../shared/persist';
 import { oneTab } from '../shared/tabs';
@@ -57,9 +57,6 @@ function playersFor(id: string | null | undefined): number {
   const n = hunters.filter((h) => id && h.campaignId === id).length;
   return n >= 1 && n <= 4 ? n : 2;
 }
-/** The fight's campaign page, if it's on this device. */
-const campaignHref = (id: string | null) =>
-  campaignById(id) ? `${import.meta.env.BASE_URL}campaign/?campaign=${encodeURIComponent(id!)}` : undefined;
 let undo: Fight[] = saved.undo ?? [];
 let log: string[] = saved.log ?? [];
 let panel: Panel = null;
@@ -491,8 +488,6 @@ function hitView(f: Fight): string {
 }
 
 function menuView(f: Fight): string {
-  // The fight's campaign's hunters, by name, in place of the plain Hunter link.
-  const linked = campaignHunterLinks(hunters, campaignId, 'btn grow');
   return sheet('Menu', `
     <div class="menu-list">
       <button class="btn" data-act="edit-stance">Edit current stance</button>
@@ -506,10 +501,9 @@ function menuView(f: Fight): string {
       <button class="btn" data-act="backup">Back up this fight</button>
       ${statusHtml(status)}
       ${messageHtml(message)}
-      ${linked ? `<div class="row"><span class="note">Hunters</span>${linked}</div>` : ''}
-      <div class="row"><a class="btn grow" href="${import.meta.env.BASE_URL}">Home</a>
-        ${switchTools('fight', { campaign: campaignHref(campaignId) })
-          .filter((x) => x.tool !== 'fight' && !(linked && x.tool === 'hunters')).map((x) => `<a class="btn grow" href="${x.href}">${x.name}</a>`).join('')}</div>
+      <div class="row tools"><a class="btn" href="${import.meta.env.BASE_URL}">Home</a>
+        ${switchTools('fight', { campaignId: campaignById(campaignId)?.id, hunters }).filter((x) => x.tool !== 'fight')
+          .map((x) => `<a class="btn" href="${x.href}">${esc(x.name)}</a>`).join('')}</div>
       <button class="btn alert" data-act="new-fight">New fight</button>
     </div>`);
 }

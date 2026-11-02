@@ -69,6 +69,7 @@
 .hit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .hit-grid .btn { min-height: 64px; }
 .menu-list { display: grid; gap: 8px; }
+.menu-list .tools .btn { flex: 1 0 auto; }
 .state-pick { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .log { margin: 0; padding-left: 20px; display: grid; gap: 4px; max-height: 50vh; overflow: auto; }
 .stance-form { display: grid; gap: 12px; }

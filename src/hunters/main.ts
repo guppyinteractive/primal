@@ -101,7 +101,7 @@ function render(): void {
     </section>`).join('');
 
   root.innerHTML = `
-    ${topbar('Hunter tracker', 'hunters', campaign ? { campaign: `${import.meta.env.BASE_URL}campaign/?campaign=${encodeURIComponent(campaign.id)}` } : {})}
+    ${topbar('Hunter tracker', 'hunters', { campaignId: campaign?.id, hunters: state.hunters, hunterId: h.id })}
     <main class="page hunters">
       <nav class="row tabs">${tabs}<button class="btn quiet small" data-act="add">+ Hunter</button></nav>
       <div class="cols">
@@ -176,7 +176,7 @@ root.addEventListener('change', (ev) => {
   if (el.dataset.act === 'campaign') {
     hunter().campaignId = el.value || null;
     persist();
-    render(); // the top bar's Campaign link follows
+    render(); // the top bar follows
   }
 });
 
