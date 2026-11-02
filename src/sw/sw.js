@@ -36,7 +36,10 @@ self.addEventListener('fetch', (event) => {
 /** A page: the network if it answers in time, else the cached copy. */
 async function page(request) {
   const cache = await caches.open(CACHE);
-  const network = fetch(request).then((response) => {
+  // 'no-cache' checks with the server: GitHub Pages lets the browser keep each
+  // address (hunters/?hunter=…) for 10 minutes, which would bring back a page
+  // from before a deploy, whose files are gone.
+  const network = fetch(new Request(request, { cache: 'no-cache' })).then((response) => {
     if (response.ok) void cache.put(pageKey(request), response.clone());
     return response;
   });
