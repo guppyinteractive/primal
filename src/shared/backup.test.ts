@@ -119,6 +119,15 @@ group('backing up one thing', () => {
     expect(players(mergeHunter(file({ ...sam, player: '' }), device({ ...ann, player: '', notes: 'x' }), now).record))
       .toEqual(['', '']);
   });
+
+  it('gives the hunter a new id if another hunter on the device has its id', () => {
+    const ids = (r: Stored) => (r.data as { hunters: { id: string }[] }).hunters.map((h) => h.id);
+    const added = ids(mergeHunter(file({ ...sam, id: 'h1' }), device({ ...blank, id: 'h1', player: 'Ann' }), now).record);
+    expect(added[0]).toBe('h1');
+    expect(added[1]).not.toBe('h1');
+    // Replacing a hunter keeps the file's id.
+    expect(ids(mergeHunter(file({ ...sam, id: 'h1' }), device({ ...blank, id: 'h1', player: 'Sam' }), now).record)).toEqual(['h1']);
+  });
 });
 
 group('restore preview', () => {

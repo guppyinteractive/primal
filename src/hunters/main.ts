@@ -1,6 +1,6 @@
 import '../shared/wire.css';
 import './hunters.css';
-import { DISCLAIMER, esc, topbar } from '../shared/util';
+import { DISCLAIMER, esc, hunterName, newId, topbar } from '../shared/util';
 import { load, save } from '../shared/store';
 import { protectIfInstalled } from '../shared/persist';
 import { oneTab } from '../shared/tabs';
@@ -12,6 +12,9 @@ import { resourceIcon } from '../shared/icons';
 const ROWS = ['A', 'B', 'C', 'D', 'E'] as const;
 
 interface Hunter {
+  id: string;
+  /** The campaign this hunter plays in, or null. Ignored if that campaign isn't on this device. */
+  campaignId: string | null;
   player: string;
   hunterClass: string;
   /** Skill tree: [tier 1 gained, tier 2 gained] for rows A–E. */
@@ -27,6 +30,8 @@ interface Saved {
 
 function newHunter(): Hunter {
   return {
+    id: newId(),
+    campaignId: null,
     player: '',
     hunterClass: '',
     skills: ROWS.map(() => [false, false] as [boolean, boolean]),
@@ -42,6 +47,14 @@ function newHunter(): Hunter {
 const root = document.getElementById('app')!;
 await oneTab(); // before loading, so an inactive tab never saves
 const state = await load<Saved>('hunters', { hunters: [newHunter()], current: 0 });
+/** A link from a campaign or fight opens that hunter. */
+const linked = new URLSearchParams(location.search).get('hunter');
+if (linked && state.hunters.some((x) => x.id === linked)) state.current = state.hunters.findIndex((x) => x.id === linked);
+if (linked) history.replaceState(null, '', location.pathname);
+/** The campaigns on this device, to choose from (read once; the campaign tracker owns them). */
+const campaigns = (await load<{ campaigns: { id: string; name: string }[] } | null>('campaign', null))?.campaigns ?? [];
+/** The hunter's campaign, if it's on this device. */
+const campaignOf = (h: Hunter) => campaigns.find((x) => x.id === h.campaignId) ?? null;
 
 /** The outcome of the last backup. */
 let message: Message | null = null;
@@ -53,7 +66,14 @@ const persist = () => void save('hunters', state);
 function render(): void {
   const h = hunter();
   const tabs = state.hunters.map((x, i) =>
-    `<button class="toggle" aria-pressed="${i === state.current}" data-act="pick" data-i="${i}">${esc(x.player || x.hunterClass || `Hunter ${i + 1}`)}</button>`).join('');
+    `<button class="toggle" aria-pressed="${i === state.current}" data-act="pick" data-i="${i}">${esc(hunterName(x, i))}</button>`).join('');
+  const campaign = campaignOf(h);
+  const campaignField = campaigns.length ? `
+            <label class="field"><span class="label">Campaign</span>
+              <select data-act="campaign">
+                <option value="">None</option>
+                ${campaigns.map((x, i) => `<option value="${esc(x.id)}" ${x === campaign ? 'selected' : ''}>${esc(x.name.trim() || `Campaign ${i + 1}`)}</option>`).join('')}
+              </select></label>` : '';
 
   const skills = ROWS.map((r, i) => `
     <div class="skill-row">
@@ -81,7 +101,7 @@ function render(): void {
     </section>`).join('');
 
   root.innerHTML = `
-    ${topbar('Hunter tracker', 'hunters')}
+    ${topbar('Hunter tracker', 'hunters', campaign ? { campaign: `${import.meta.env.BASE_URL}campaign/?campaign=${encodeURIComponent(campaign.id)}` } : {})}
     <main class="page hunters">
       <nav class="row tabs">${tabs}<button class="btn quiet small" data-act="add">+ Hunter</button></nav>
       <div class="cols">
@@ -91,6 +111,7 @@ function render(): void {
               <input data-field="player" value="${esc(h.player)}" autocomplete="off"></label>
             <label class="field"><span class="label">Class</span>
               <input data-field="hunterClass" value="${esc(h.hunterClass)}" autocomplete="off"></label>
+            ${campaignField}
           </section>
           <section class="box">
             <div class="label">Skill tree</div>
@@ -148,6 +169,15 @@ root.addEventListener('click', async (ev) => {
   }
   persist();
   render();
+});
+
+root.addEventListener('change', (ev) => {
+  const el = ev.target as HTMLSelectElement;
+  if (el.dataset.act === 'campaign') {
+    hunter().campaignId = el.value || null;
+    persist();
+    render(); // the top bar's Campaign link follows
+  }
 });
 
 // Text fields save as you type without re-rendering (keeps focus and the keyboard open).

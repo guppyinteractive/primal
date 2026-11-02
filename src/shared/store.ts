@@ -52,7 +52,13 @@ export const UPGRADES: Record<RecordName, Upgrade[]> = {
     // the device's one campaign, which the campaign upgrade gives the id 'c1'.
     (d: { fight: object | null }) => ({ ...d, campaignId: d.fight ? FIRST_CAMPAIGN : null }),
   ],
-  hunters: [],
+  hunters: [
+    // v1 → v2: each hunter gained an id and an optional campaign (null = none).
+    (d: { hunters: object[] }) => ({
+      ...d,
+      hunters: d.hunters.map((h, i) => ({ ...h, id: `h${i + 1}`, campaignId: null })),
+    }),
+  ],
   campaign: [
     // v1 → v2: early wireframe builds stored trophies as {name, won} objects.
     (c: { trophies: unknown[] }) => ({

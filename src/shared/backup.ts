@@ -6,7 +6,7 @@ import {
   UPGRADES, backedUpAt, currentVersion, exportAll, markBackedUp, upgrade, type RecordName, type Stored,
 } from './store';
 import { score, type Trial } from './trial';
-import { esc } from './util';
+import { esc, newId } from './util';
 
 /** Format 2 added `only`. */
 export const FORMAT = 2;
@@ -137,7 +137,7 @@ export function parseBackup(text: string): Backup {
   return out;
 }
 
-interface Hunter { player: string; hunterClass: string; notes: string; skills: unknown; counts: unknown }
+interface Hunter { id: string; player: string; hunterClass: string; notes: string; skills: unknown; counts: unknown }
 
 /** A hunter nobody has filled in: no text, no skills, no resources. */
 const blank = (h: Hunter): boolean =>
@@ -156,7 +156,9 @@ export function mergeHunter(file: Stored, device: Stored | undefined, now = new 
   const found = key(hunter) ? list.findIndex((h) => key(h) === key(hunter)) : -1;
   const empty = list.findIndex(blank);
   const current = found >= 0 ? found : empty >= 0 ? empty : list.length;
-  list[current] = hunter;
+  // Ids are only unique per device (upgraded hunters are h1, h2…), so a clash gets a new one.
+  const clash = list.some((h, i) => i !== current && h.id === hunter.id);
+  list[current] = clash ? { ...hunter, id: newId() } : hunter;
   return {
     record: { version: currentVersion('hunters'), savedAt: now.toISOString(), data: { hunters: list, current } },
     replaces: found >= 0 ? found : null,

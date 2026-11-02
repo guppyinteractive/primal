@@ -2,7 +2,7 @@ import '../shared/wire.css';
 import './fight.css';
 import * as E from '../engine/fight';
 import { STATE_DEFS, STATE_IDS, type StateId } from '../engine/states';
-import { DISCLAIMER, esc, keepAwake, switchTools, topbar } from '../shared/util';
+import { DISCLAIMER, campaignHunterLinks, esc, keepAwake, switchTools, topbar, type HunterLink } from '../shared/util';
 import { load, save } from '../shared/store';
 import { protectIfInstalled } from '../shared/persist';
 import { oneTab } from '../shared/tabs';
@@ -50,6 +50,16 @@ let campaignId = saved.campaignId ?? null;
 const campaigns = await load<Campaigns | null>('campaign', null);
 const campaignById = (id: string | null) => campaigns?.campaigns.find((x) => x.id === id) ?? null;
 const campaignName = (x: { name: string }) => x.name.trim() || 'an unnamed campaign';
+/** This device's hunters, to link the ones in the fight's campaign (read once; the hunter tracker owns them). */
+const hunters = (await load<{ hunters: HunterLink[] } | null>('hunters', null))?.hunters ?? [];
+/** The player count a campaign suggests: its hunters on this device, if 1–4, else 2. */
+function playersFor(id: string | null | undefined): number {
+  const n = hunters.filter((h) => id && h.campaignId === id).length;
+  return n >= 1 && n <= 4 ? n : 2;
+}
+/** The fight's campaign page, if it's on this device. */
+const campaignHref = (id: string | null) =>
+  campaignById(id) ? `${import.meta.env.BASE_URL}campaign/?campaign=${encodeURIComponent(id!)}` : undefined;
 let undo: Fight[] = saved.undo ?? [];
 let log: string[] = saved.log ?? [];
 let panel: Panel = null;
@@ -228,6 +238,7 @@ function setupView(): string {
             <option value="">None</option>
           </select></label>`
     : list.length ? `<input type="hidden" name="campaign" value="${esc(list[0].id)}">` : '';
+  const players = playersFor(list.length ? chosen : null);
   return `
     ${topbar('Fight tracker', 'fight')}
     <main class="page setup">
@@ -238,7 +249,7 @@ function setupView(): string {
         <datalist id="monsters">${MONSTERS.map((m) => `<option value="${esc(m)}"></option>`).join('')}</datalist>
         <fieldset class="field plain"><legend class="label">Players</legend>
           <div class="row">${[1, 2, 3, 4].map((n) => `
-            <label class="toggle radio"><input type="radio" name="players" value="${n}" ${n === 2 ? 'checked' : ''}> ${n}</label>`).join('')}
+            <label class="toggle radio"><input type="radio" name="players" value="${n}" ${n === players ? 'checked' : ''}> ${n}</label>`).join('')}
           </div></fieldset>
         <label class="field"><span class="label">Starting health</span>
           <input name="health" type="number" inputmode="numeric" min="1" value="${E.DEFAULT_HEALTH}"></label>
@@ -480,6 +491,8 @@ function hitView(f: Fight): string {
 }
 
 function menuView(f: Fight): string {
+  // The fight's campaign's hunters, by name, in place of the plain Hunter link.
+  const linked = campaignHunterLinks(hunters, campaignId, 'btn grow');
   return sheet('Menu', `
     <div class="menu-list">
       <button class="btn" data-act="edit-stance">Edit current stance</button>
@@ -493,8 +506,10 @@ function menuView(f: Fight): string {
       <button class="btn" data-act="backup">Back up this fight</button>
       ${statusHtml(status)}
       ${messageHtml(message)}
+      ${linked ? `<div class="row"><span class="note">Hunters</span>${linked}</div>` : ''}
       <div class="row"><a class="btn grow" href="${import.meta.env.BASE_URL}">Home</a>
-        ${switchTools('fight').filter((x) => x.tool !== 'fight').map((x) => `<a class="btn grow" href="${x.href}">${x.name}</a>`).join('')}</div>
+        ${switchTools('fight', { campaign: campaignHref(campaignId) })
+          .filter((x) => x.tool !== 'fight' && !(linked && x.tool === 'hunters')).map((x) => `<a class="btn grow" href="${x.href}">${x.name}</a>`).join('')}</div>
       <button class="btn alert" data-act="new-fight">New fight</button>
     </div>`);
 }
@@ -735,6 +750,14 @@ root.addEventListener('input', (ev) => {
   };
   if (hasHardening(input.value)) tick('hardening');
   if (hasCharge(input.value)) tick('charge');
+});
+
+// Picking a campaign suggests its number of hunters as the player count.
+root.addEventListener('change', (ev) => {
+  const select = ev.target as HTMLSelectElement;
+  if (select.name !== 'campaign') return;
+  const radio = select.form?.querySelector<HTMLInputElement>(`input[name="players"][value="${playersFor(select.value)}"]`);
+  if (radio) radio.checked = true;
 });
 
 // A campaign link (fight/?monster=…&tier=…) is for a new fight: a finished one
