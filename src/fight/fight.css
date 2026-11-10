@@ -30,6 +30,22 @@
 .spacer { flex: 1; }
 .grow { flex: 1; min-width: 0; }
 .tap-hint { font-size: 12px; }
+
+/* Last hits, newest on the left. One row: chips that don't fit wrap out of sight. */
+.hits { display: flex; flex-wrap: wrap; gap: 0 6px; height: 28px; overflow: hidden; }
+.hit-chip {
+  box-sizing: border-box;
+  height: 28px;
+  min-width: 36px;
+  padding: 0 10px;
+  display: inline-grid;
+  place-items: center;
+  border: 1.5px solid var(--muted);
+  border-radius: 999px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.hit-chip.newest { border-color: var(--ink); border-width: 2px; }
 .alert-text { color: var(--alert); margin: 0; }
 
 /* Portrait: exposed sides and damage value sit side by side. */

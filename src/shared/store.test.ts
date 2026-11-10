@@ -85,15 +85,15 @@ describe('upgrades', () => {
     const f = (states: string[]) => ({ states, round: 1 });
     const out = upgrade('fight', { version: 3, data: { fight: f(['acceleration', 'stunned', 'acceleration']), undo: [f(Array(5).fill('acceleration'))] } });
     expect(out).toEqual({
-      fight: { states: ['stunned'], round: 1, acceleration: 2, charge: null },
-      undo: [{ states: [], round: 1, acceleration: 4, charge: null }],
+      fight: { states: ['stunned'], round: 1, acceleration: 2, charge: null, hits: [] },
+      undo: [{ states: [], round: 1, acceleration: 4, charge: null, hits: [] }],
       campaignId: 'c1',
     });
   });
 
   it('fight v4 → v5 gives fights no Charge track', () => {
     const out = upgrade('fight', { version: 4, data: { fight: { round: 2 }, undo: [{ round: 1 }] } });
-    expect(out).toEqual({ fight: { round: 2, charge: null }, undo: [{ round: 1, charge: null }], campaignId: 'c1' });
+    expect(out).toEqual({ fight: { round: 2, charge: null, hits: [] }, undo: [{ round: 1, charge: null, hits: [] }], campaignId: 'c1' });
   });
 
   it('campaign v2 → v3 turns done quests into completed and the rest into locked', () => {
@@ -115,6 +115,12 @@ describe('upgrades', () => {
   it('fight v5 → v6 gives a fight in progress to the first campaign', () => {
     expect(upgrade('fight', { version: 5, data: { fight: { round: 2 }, undo: [] } })).toMatchObject({ campaignId: 'c1' });
     expect(upgrade('fight', { version: 5, data: { fight: null, undo: [] } })).toMatchObject({ campaignId: null });
+  });
+
+  it('fight v6 → v7 gives fights no hits yet', () => {
+    const out = upgrade('fight', { version: 6, data: { fight: { round: 2 }, undo: [{ round: 1 }], campaignId: null } });
+    expect(out).toEqual({ fight: { round: 2, hits: [] }, undo: [{ round: 1, hits: [] }], campaignId: null });
+    expect(upgrade('fight', { version: 6, data: { fight: null, undo: [], campaignId: null } })).toMatchObject({ fight: null });
   });
 
   it('refuses versions it does not know', () => {

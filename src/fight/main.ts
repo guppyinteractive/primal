@@ -345,6 +345,8 @@ function boardView(f: Fight): string {
         <div class="row"><span class="mid">${f.damage} / ${Number.isFinite(t) ? t : '—'}</span>
           <span class="note">${stance ? `toughness ${t} (${stance.toughness} × ${f.players})` : ''}</span>${keywords}</div>
         <div class="bar"><span style="width:${dmgPct}%"></span></div>
+        <div class="hits" aria-label="Last hits, newest first">${f.hits.map((n, i) =>
+          `<span class="hit-chip${i ? '' : ' newest'}">${n}</span>`).join('')}</div>
         ${f.stancePending && f.damage ? `<p class="note alert-text">${f.damage} damage carried over</p>` : ''}
         <p class="note tap-hint">Tap to enter a hit</p>
       </section>

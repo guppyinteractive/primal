@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   addState, attackDamage, blankStance, canAddState, changeAcceleration, changeBonus, changeCharge, changeHardening, isHardened, createFight, dealDamage, describe as text, endRound, gainStruggle,
-  inflictWound, loseStruggle, monsterUpkeep, removeState, revealStance, stateCount, toughness,
+  HITS_KEPT, inflictWound, loseStruggle, monsterUpkeep, removeState, revealStance, stateCount, toughness,
   type Fight, type Stance,
 } from './fight';
 
@@ -316,5 +316,21 @@ describe('Hardening track and Hardened (pp. 95, 109)', () => {
     }
     expect(canAddState(f, 'unstoppable')).toBe(true);
     expect(canAddState(changeHardening(f, -1).fight, 'stunned')).toBe(true);
+  });
+});
+
+describe('recent hits', () => {
+  it('remembers hits as entered, newest first, up to a limit', () => {
+    let f = fightWith(2, 12, stance(50, null));
+    expect(f.hits).toEqual([]);
+    f = dealDamage(f, 5).fight;
+    f = dealDamage(f, 10).fight;
+    expect(f.hits).toEqual([10, 5]);
+    for (let i = 0; i < HITS_KEPT + 3; i++) f = dealDamage(f, 1).fight;
+    expect(f.hits).toHaveLength(HITS_KEPT);
+  });
+
+  it('a wound from a card is not a hit', () => {
+    expect(inflictWound(fightWith(2, 12, stance(5, null))).fight.hits).toEqual([]);
   });
 });

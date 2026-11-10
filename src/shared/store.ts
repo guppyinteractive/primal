@@ -51,6 +51,11 @@ export const UPGRADES: Record<RecordName, Upgrade[]> = {
     // v5 → v6: the fight remembers its campaign. A fight from before goes to
     // the device's one campaign, which the campaign upgrade gives the id 'c1'.
     (d: { fight: object | null }) => ({ ...d, campaignId: d.fight ? FIRST_CAMPAIGN : null }),
+    // v6 → v7: fights remember their last hits, starting with none.
+    (d: { fight: object | null; undo?: object[] }) => {
+      const up = <F extends object | null>(f: F): F => f && { ...f, hits: [] };
+      return { ...d, fight: up(d.fight), undo: (d.undo ?? []).map(up) };
+    },
   ],
   hunters: [
     // v1 → v2: each hunter gained an id and an optional campaign (null = none).

@@ -66,7 +66,12 @@ export interface Fight {
   /** Charge track level, 0–3 (p. 95), or null when the monster has no track. */
   charge: number | null;
   outcome: Outcome | null;
+  /** The last hits as entered, newest first, so the table can check what went in. */
+  hits: number[];
 }
+
+/** How many recent hits a fight remembers. */
+export const HITS_KEPT = 12;
 
 export type FightEvent =
   /** `base` as entered, ×2 if `doubled`, less `shield`, deals `amount`. */
@@ -130,6 +135,7 @@ export function createFight(opts: NewFight): Fight {
     hardening: opts.hardening ? 0 : null,
     charge: opts.charge ? 0 : null,
     outcome: null,
+    hits: [],
   };
 }
 
@@ -214,6 +220,7 @@ export function dealDamage(fight: Fight, amount: number, useVulnerable = false):
   const f = clone(fight);
   const events: FightEvent[] = [];
   if (f.outcome || amount <= 0) return { fight: f, events };
+  f.hits = [amount, ...f.hits].slice(0, HITS_KEPT);
   const doubled = useVulnerable && hasState(f, 'vulnerable');
   if (doubled) {
     f.states = f.states.filter((s) => s !== 'vulnerable');
