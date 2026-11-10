@@ -82,8 +82,10 @@
 }
 
 /* Panels */
-.hit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.hit-grid .btn { min-height: 64px; }
+.hit-form { display: grid; gap: 8px; }
+.hit-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.hit-steps .btn { min-height: 64px; padding-inline: 0; }
+.hit-form input[name="amount"] { font-size: 1.4rem; font-weight: 700; }
 .menu-list { display: grid; gap: 8px; }
 .menu-list .tools .btn { flex: 1 0 auto; }
 .state-pick { display: flex; justify-content: space-between; align-items: center; gap: 12px; }

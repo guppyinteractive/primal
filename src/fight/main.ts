@@ -475,12 +475,15 @@ function hitView(f: Fight): string {
   const vuln = E.hasState(f, 'vulnerable');
   const shield = E.currentStance(f)?.shield ?? 0;
   return sheet('Hit', `
-    <div class="hit-grid">
-      ${[1, 2, 3, 4, 5, 6].map((n) => `<button class="btn mid" data-act="deal" data-n="${n}">+${n}</button>`).join('')}
-    </div>
-    <form class="row" data-form="custom-hit">
-      <input name="amount" type="number" inputmode="numeric" min="1" placeholder="Amount" class="grow" aria-label="Custom amount">
-      <button class="btn primary" type="submit">Deal</button>
+    <form class="hit-form" data-form="custom-hit">
+      <div class="hit-steps">
+        ${[1, 5, 20, -5, -1].map((n) =>
+          `<button class="btn mid" type="button" data-act="hit-add" data-n="${n}">${n > 0 ? '+' : '−'}${Math.abs(n)}</button>`).join('')}
+      </div>
+      <div class="row">
+        <input name="amount" type="number" inputmode="numeric" min="1" placeholder="Amount" class="grow" aria-label="Hit amount">
+        <button class="btn primary" type="submit">Deal</button>
+      </div>
     </form>
     ${vuln ? `<label class="row"><input type="checkbox" name="vuln" id="use-vuln"> Use Vulnerable (×2 this hit)</label>` : ''}
     ${shield ? `<p class="note">Enter the hit before the Shield: <strong>Shield ${shield}</strong> takes ${shield} off each hit${vuln ? ', after Vulnerable doubles it' : ''}.</p>` : ''}
@@ -640,10 +643,12 @@ root.addEventListener('click', async (ev) => {
       break;
     case 'log': panel = { kind: 'log' }; render(); break;
     case 'state': panel = { kind: 'state', id: id! }; render(); break;
-    case 'deal': {
-      const useVuln = root.querySelector<HTMLInputElement>('#use-vuln')?.checked ?? false;
-      panel = null;
-      apply(E.dealDamage(f, Number(target.dataset.n), useVuln));
+    case 'hit-add': {
+      const input = root.querySelector<HTMLInputElement>('form[data-form="custom-hit"] input[name="amount"]');
+      if (input) {
+        const total = Math.max(0, Math.round(Number(input.value) || 0) + Number(target.dataset.n));
+        input.value = total ? String(total) : '';
+      }
       break;
     }
     case 'damage-down': panel = null; apply(E.correct(f, 'damage', -1)); break;
