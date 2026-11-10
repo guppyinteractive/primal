@@ -486,10 +486,7 @@ function hitView(f: Fight): string {
       </div>
     </form>
     ${vuln ? `<label class="row"><input type="checkbox" name="vuln" id="use-vuln"> Use Vulnerable (×2 this hit)</label>` : ''}
-    ${shield ? `<p class="note">Enter the hit before the Shield: <strong>Shield ${shield}</strong> takes ${shield} off each hit${vuln ? ', after Vulnerable doubles it' : ''}.</p>` : ''}
-    <div class="row">
-      <button class="btn quiet small" data-act="damage-down">Damage −1 (correction)</button>
-    </div>`);
+    ${shield ? `<p class="note">Enter the hit before the Shield: <strong>Shield ${shield}</strong> takes ${shield} off each hit${vuln ? ', after Vulnerable doubles it' : ''}.</p>` : ''}`);
 }
 
 function menuView(f: Fight): string {
@@ -651,7 +648,6 @@ root.addEventListener('click', async (ev) => {
       }
       break;
     }
-    case 'damage-down': panel = null; apply(E.correct(f, 'damage', -1)); break;
     case 'health-down': apply(E.correct(f, 'health', -1)); break;
     case 'health-up': apply(E.correct(f, 'health', 1)); break;
     case 'wound-effect': panel = null; apply(E.inflictWound(f)); break;

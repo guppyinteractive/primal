@@ -198,7 +198,7 @@ There is one page, and its controls are part of the board. Whatever is on screen
 - **Tap the thing to change it:** tap damage to open hit entry, tap a sector to toggle it, tap Struggle for +/−, and tap a state chip for its hint and Remove.
 - **Quiet styling:** controls are low-contrast and grouped along the edges, so the numbers stay the focus from across the room.
 - **Main actions** sit in a slim bottom bar: **Upkeep (+N)**, **End round**, **Undo**.
-- **Hit entry:** a small popover with +1 to +6, a custom amount with **Deal**, **×2 (use Vulnerable)** when the monster is vulnerable, and −1 for corrections. It closes after a hit, so the TV shows the result.
+- **Hit entry:** a small popover with **+1 +5 +20 −5 −1** steps that build the amount (or type it), **Deal**, and **Use Vulnerable (×2)** when the monster is vulnerable. A wrong hit is fixed with **Undo**. It closes after a hit, so the TV shows the result.
 - **States:** a **+ Add state** button opens the state picker. A state is disabled there when the monster already has it (unless it stacks).
 - **Stance form:** a full-screen panel, which also shows on the TV. That's fine, because the whole table is waiting on the stance change anyway.
 - **Less frequent actions** go in a menu: New fight, Edit stance, manual health +/−, and the log.
@@ -521,3 +521,4 @@ Tracked as decision issues in Beads (`bd list --type=decision`). Record the answ
 | 2026-11-01 | The tool links keep the campaign's hunters when the hunter shown isn't in a campaign (from playtesting: tapping an unlinked hunter collapsed the names to **Hunter**, which looked random). The hunter tracker and a one-off fight fall back to the campaign tracker's selected campaign, and the hunter tracker always names the hunter shown, e.g. **Hunter 1 · Sam · Alex · Campaign**. |
 | 2026-11-10 | **Recent hits on the fight board** (awaken-yx7). Under the damage bar, a row of chips shows the last hits as entered (before Vulnerable and Shield), newest on the left and outlined darker, so the table can see a hit went in. One row only: chips that don't fit drop off the right. The fight keeps the last 12; Undo takes a hit back off the row, and a wound from a card adds none. Saved data: fight v7. |
 | 2026-11-10 | **Hit panel steps** (awaken-6db, from playtesting: +1 to +6 were rarely the hit). The hit panel's buttons are now **+1 +5 +20 −5 −1**, which add to the amount box rather than dealing; **Deal** deals the total. Typing still works, and the steps add to whatever is typed. The box doesn't go below 0. |
+| 2026-11-10 | The hit panel's **Damage −1 (correction)** button is gone: it sat under the −5/−1 steps and read like one of them, and **Undo** fixes a wrong hit fully (wound, chip and log too). |

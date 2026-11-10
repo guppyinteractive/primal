@@ -374,11 +374,10 @@ export function changeAcceleration(fight: Fight, delta: number): Result {
   return { fight: f, events: [{ kind: 'acceleration', level: f.acceleration }] };
 }
 
-/** Manual fixes that skip the rules (wrong tap, missed token). */
-export function correct(fight: Fight, field: 'health' | 'damage', delta: number): Result {
+/** Manual fixes that skip the rules (wrong tap, missed token). A wrong hit is undone instead. */
+export function correct(fight: Fight, field: 'health', delta: number): Result {
   const f = clone(fight);
-  if (field === 'health') f.health = clamp(f.health + delta, 0, f.startingHealth);
-  else f.damage = Math.max(0, f.damage + delta);
+  f.health = clamp(f.health + delta, 0, f.startingHealth);
   const sign = delta > 0 ? '+' : '';
   return { fight: f, events: [{ kind: 'correction', text: `${field} ${sign}${delta}` }] };
 }
