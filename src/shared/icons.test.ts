@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { MATERIALS, PLANTS, ELEMENTS } from './game';
-import { resourceIcon, skullIcon } from './icons';
+import { resourceIcon } from './icons';
+import { skullIcon } from './skull';
 
 describe('resourceIcon', () => {
   it('has an icon for every material, plant, and element', () => {
     for (const name of [...MATERIALS, ...PLANTS, ...ELEMENTS]) {
-      expect(resourceIcon(name), name).toMatch(/^<svg class="res-icon"/);
+      expect(resourceIcon(name), name).toMatch(/^<(svg|img) class="res-icon"/);
     }
   });
 

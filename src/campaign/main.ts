@@ -7,7 +7,7 @@ import { oneTab } from '../shared/tabs';
 import { registerWorker } from '../shared/install';
 import { backUpEverything, backUpPart, backupRowHtml, currentStatus, messageHtml, type Message } from '../shared/backup';
 import { ELEMENTS, MONSTERS } from '../shared/game';
-import { skullIcon } from '../shared/icons';
+import { skullIcon } from '../shared/skull';
 import { DEFEAT_SPACES, freshTrial, lost, over, score, won, type Trial } from '../shared/trial';
 
 const CHAPTERS = 11;

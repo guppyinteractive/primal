@@ -79,8 +79,10 @@ device keeps its own state; there is no sync or accounts.
 
 - Game content: component names from the sheets are fine as plain labels. Never commit
   game art, icons, logos, or rulebook/card text; state hints are in our own words with
-  a page reference. One exception, by the user's decision: the four base-game class
-  icons in `src/shared/class-icons.ts`, from the rulebook (design/ux-plan.md, 2026-11-10).
+  a page reference. Exceptions, by the user's decision (design/ux-plan.md, 2026-11-10):
+  the four base-game class icons (`src/shared/class-icons.ts`, from the rulebook) and the
+  character sheet's resource icons (`src/shared/icons.ts` and `src/shared/resources/`:
+  element vectors, material and plant pictures as raster, never traced).
   `rules/` and `design/reference/` are git-ignored and must stay so.
 - Keep the "Unofficial fan-made tool" disclaimer on every page.
 - Every page must work in portrait and landscape at phone width with no horizontal scroll.
