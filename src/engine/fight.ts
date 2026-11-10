@@ -67,7 +67,22 @@ export interface Fight {
   charge: number | null;
   outcome: Outcome | null;
   /** The last hits as entered, newest first, so the table can check what went in. */
-  hits: number[];
+  hits: Hit[];
+}
+
+/** The base game's hunter classes, one per hunter (p. 8). */
+export const HUNTER_CLASSES = {
+  'great-sword': 'Great Sword',
+  hammer: 'Hammer',
+  'great-bow': 'Great Bow',
+  'sword-shield': 'Sword and Shield',
+} as const;
+export type HunterClass = keyof typeof HUNTER_CLASSES;
+
+/** A hit as entered, and the class of the hunter who dealt it, if picked. */
+export interface Hit {
+  amount: number;
+  by: HunterClass | null;
 }
 
 /** How many recent hits a fight remembers. */
@@ -75,7 +90,7 @@ export const HITS_KEPT = 12;
 
 export type FightEvent =
   /** `base` as entered, ×2 if `doubled`, less `shield`, deals `amount`. */
-  | { kind: 'hit'; base: number; doubled: boolean; shield: number; amount: number }
+  | { kind: 'hit'; base: number; doubled: boolean; shield: number; amount: number; by: HunterClass | null }
   | { kind: 'wound'; health: number; source: 'damage' | 'effect' }
   /** A Resistant stance (or a Hardened monster) discards its excess damage instead of carrying it. */
   | { kind: 'stance-complete'; label: string; carried: number; discarded: number; by: Discarder | null }
@@ -216,11 +231,11 @@ export function canAddState(fight: Fight, id: StateId): boolean {
  * reduced by the stance's Shield. The rules don't order the two; Shield comes
  * last because it reduces the damage the monster is actually dealt.
  */
-export function dealDamage(fight: Fight, amount: number, useVulnerable = false): Result {
+export function dealDamage(fight: Fight, amount: number, useVulnerable = false, by: HunterClass | null = null): Result {
   const f = clone(fight);
   const events: FightEvent[] = [];
   if (f.outcome || amount <= 0) return { fight: f, events };
-  f.hits = [amount, ...f.hits].slice(0, HITS_KEPT);
+  f.hits = [{ amount, by }, ...f.hits].slice(0, HITS_KEPT);
   const doubled = useVulnerable && hasState(f, 'vulnerable');
   if (doubled) {
     f.states = f.states.filter((s) => s !== 'vulnerable');
@@ -229,7 +244,7 @@ export function dealDamage(fight: Fight, amount: number, useVulnerable = false):
   const raw = doubled ? amount * 2 : amount;
   const shield = Math.min(raw, currentStance(f)?.shield ?? 0);
   f.damage += raw - shield;
-  events.push({ kind: 'hit', base: amount, doubled, shield, amount: raw - shield });
+  events.push({ kind: 'hit', base: amount, doubled, shield, amount: raw - shield, by });
   resolveWounds(f, events);
   return { fight: f, events };
 }
@@ -450,7 +465,7 @@ export function describe(e: FightEvent): string {
   switch (e.kind) {
     case 'hit': {
       const steps = `${e.doubled ? ' ×2 (Vulnerable)' : ''}${e.shield ? ` −${e.shield} (Shield)` : ''}`;
-      return `Hit ${e.base}${steps ? `${steps} = ${e.amount}` : ''}`;
+      return `${e.by ? `${HUNTER_CLASSES[e.by]}: hit` : 'Hit'} ${e.base}${steps ? `${steps} = ${e.amount}` : ''}`;
     }
     case 'wound': return `Wound${e.source === 'effect' ? ' (card effect)' : ''} → health ${e.health}`;
     case 'stance-complete': return e.discarded

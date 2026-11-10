@@ -123,7 +123,16 @@ describe('upgrades', () => {
     expect(upgrade('fight', { version: 6, data: { fight: null, undo: [], campaignId: null } })).toMatchObject({ fight: null });
   });
 
-  it('refuses versions it does not know', () => {
+  it('fight v7 → v8 gives each hit no hunter', () => {
+    const out = upgrade('fight', { version: 7, data: { fight: { hits: [5, 10] }, undo: [{ hits: [10] }], campaignId: null } });
+    expect(out).toEqual({
+      fight: { hits: [{ amount: 5, by: null }, { amount: 10, by: null }] },
+      undo: [{ hits: [{ amount: 10, by: null }] }],
+      campaignId: null,
+    });
+  });
+
+    it('refuses versions it does not know', () => {
     expect(() => upgrade('fight', { version: currentVersion('fight') + 1, data: {} })).toThrow();
     expect(() => upgrade('fight', { version: 0, data: {} })).toThrow();
   });

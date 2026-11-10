@@ -38,13 +38,16 @@
   height: 28px;
   min-width: 36px;
   padding: 0 10px;
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   border: 1.5px solid var(--muted);
   border-radius: 999px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+.hit-chip .class-icon { width: 16px; height: 16px; margin-left: -4px; }
 .hit-chip.newest { border-color: var(--ink); border-width: 2px; }
 .alert-text { color: var(--alert); margin: 0; }
 
@@ -83,6 +86,9 @@
 
 /* Panels */
 .hit-form { display: grid; gap: 8px; }
+.hit-by { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.hit-by .toggle { min-height: 56px; display: grid; place-items: center; padding: 0; }
+.hit-by .class-icon { width: 36px; height: 36px; }
 .hit-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .hit-steps .btn { min-height: 64px; padding-inline: 0; }
 .hit-form input[name="amount"] { font-size: 1.4rem; font-weight: 700; }

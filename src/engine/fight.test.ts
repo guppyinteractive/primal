@@ -191,7 +191,7 @@ describe('stance keywords: Shield and Resistant (pp. 111-112)', () => {
     let f = fightWith(1, 10, { ...stance(5, null), shield: 2 });
     const r = dealDamage(f, 3);
     expect(r.fight.damage).toBe(1);
-    expect(r.events).toContainEqual({ kind: 'hit', base: 3, doubled: false, shield: 2, amount: 1 });
+    expect(r.events).toContainEqual({ kind: 'hit', base: 3, doubled: false, shield: 2, amount: 1, by: null });
     expect(text(r.events[0])).toBe('Hit 3 −2 (Shield) = 1');
     f = dealDamage(r.fight, 1).fight;
     expect(f.damage).toBe(1);
@@ -325,9 +325,17 @@ describe('recent hits', () => {
     expect(f.hits).toEqual([]);
     f = dealDamage(f, 5).fight;
     f = dealDamage(f, 10).fight;
-    expect(f.hits).toEqual([10, 5]);
+    expect(f.hits.map((h) => h.amount)).toEqual([10, 5]);
     for (let i = 0; i < HITS_KEPT + 3; i++) f = dealDamage(f, 1).fight;
     expect(f.hits).toHaveLength(HITS_KEPT);
+  });
+
+  it('remembers who dealt a hit, when picked', () => {
+    let f = fightWith(2, 12, stance(50, null));
+    f = dealDamage(f, 7, false, 'hammer').fight;
+    f = dealDamage(f, 3).fight;
+    expect(f.hits).toEqual([{ amount: 3, by: null }, { amount: 7, by: 'hammer' }]);
+    expect(text(dealDamage(f, 4, false, 'great-bow').events[0])).toBe('Great Bow: hit 4');
   });
 
   it('a wound from a card is not a hit', () => {

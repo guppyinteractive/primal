@@ -56,6 +56,12 @@ export const UPGRADES: Record<RecordName, Upgrade[]> = {
       const up = <F extends object | null>(f: F): F => f && { ...f, hits: [] };
       return { ...d, fight: up(d.fight), undo: (d.undo ?? []).map(up) };
     },
+    // v7 → v8: each hit remembers the class of the hunter who dealt it (null = not picked).
+    (d: { fight: { hits: number[] } | null; undo?: { hits: number[] }[] }) => {
+      const up = <F extends { hits: number[] } | null>(f: F): F =>
+        f && { ...f, hits: f.hits.map((amount) => ({ amount, by: null })) };
+      return { ...d, fight: up(d.fight), undo: (d.undo ?? []).map(up) };
+    },
   ],
   hunters: [
     // v1 → v2: each hunter gained an id and an optional campaign (null = none).

@@ -9,6 +9,7 @@ import { oneTab } from '../shared/tabs';
 import { registerWorker } from '../shared/install';
 import { backUpEverything, backUpPart, currentStatus, messageHtml, statusHtml, type Message } from '../shared/backup';
 import { sectorsSvg } from '../shared/sectors';
+import { classIcon } from '../shared/class-icons';
 import { CHARGE_MONSTERS, DUST_MONSTERS, HARDENING_MONSTERS, MONSTERS, trophyFor } from '../shared/game';
 
 type Fight = E.Fight;
@@ -60,6 +61,8 @@ function playersFor(id: string | null | undefined): number {
 let undo: Fight[] = saved.undo ?? [];
 let log: string[] = saved.log ?? [];
 let panel: Panel = null;
+/** The class picked in the hit panel; it stays picked for the next hit. */
+let hitBy: E.HunterClass | null = null;
 /** Big pop-ups over the board. A held one stays until tapped, because the table has something to do. */
 let announcements: { what: string; sub: string; alert: boolean; hold?: boolean }[] = [];
 let announceTimer = 0;
@@ -345,8 +348,8 @@ function boardView(f: Fight): string {
         <div class="row"><span class="mid">${f.damage} / ${Number.isFinite(t) ? t : '—'}</span>
           <span class="note">${stance ? `toughness ${t} (${stance.toughness} × ${f.players})` : ''}</span>${keywords}</div>
         <div class="bar"><span style="width:${dmgPct}%"></span></div>
-        <div class="hits" aria-label="Last hits, newest first">${f.hits.map((n, i) =>
-          `<span class="hit-chip${i ? '' : ' newest'}">${n}</span>`).join('')}</div>
+        <div class="hits" aria-label="Last hits, newest first">${f.hits.map((h, i) =>
+          `<span class="hit-chip${i ? '' : ' newest'}"${h.by ? ` title="${E.HUNTER_CLASSES[h.by]}"` : ''}>${h.by ? classIcon(h.by) : ''}${h.amount}</span>`).join('')}</div>
         ${f.stancePending && f.damage ? `<p class="note alert-text">${f.damage} damage carried over</p>` : ''}
         <p class="note tap-hint">Tap to enter a hit</p>
       </section>
@@ -476,6 +479,10 @@ function hitView(f: Fight): string {
   const shield = E.currentStance(f)?.shield ?? 0;
   return sheet('Hit', `
     <form class="hit-form" data-form="custom-hit">
+      <div class="hit-by" role="group" aria-label="Hunter">
+        ${(Object.keys(E.HUNTER_CLASSES) as E.HunterClass[]).map((c) =>
+          `<button class="toggle" type="button" data-act="hit-by" data-id="${c}" aria-pressed="${hitBy === c}" aria-label="${E.HUNTER_CLASSES[c]}" title="${E.HUNTER_CLASSES[c]}">${classIcon(c)}</button>`).join('')}
+      </div>
       <div class="hit-steps">
         ${[1, 5, 20, -5, -1].map((n) =>
           `<button class="btn mid" type="button" data-act="hit-add" data-n="${n}">${n > 0 ? '+' : '−'}${Math.abs(n)}</button>`).join('')}
@@ -640,6 +647,14 @@ root.addEventListener('click', async (ev) => {
       break;
     case 'log': panel = { kind: 'log' }; render(); break;
     case 'state': panel = { kind: 'state', id: id! }; render(); break;
+    case 'hit-by': {
+      // Tap again to clear. Updated in place so a typed amount stays.
+      const c = target.dataset.id as E.HunterClass;
+      hitBy = hitBy === c ? null : c;
+      root.querySelectorAll<HTMLElement>('[data-act="hit-by"]')
+        .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === hitBy)));
+      break;
+    }
     case 'hit-add': {
       const input = root.querySelector<HTMLInputElement>('form[data-form="custom-hit"] input[name="amount"]');
       if (input) {
@@ -723,7 +738,7 @@ root.addEventListener('submit', (ev) => {
       if (!fight || !(amount > 0)) return;
       const useVuln = root.querySelector<HTMLInputElement>('#use-vuln')?.checked ?? false;
       panel = null;
-      apply(E.dealDamage(fight, amount, useVuln));
+      apply(E.dealDamage(fight, amount, useVuln, hitBy));
       break;
     }
     case 'stance': {
