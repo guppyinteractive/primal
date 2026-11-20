@@ -334,8 +334,15 @@ describe('recent hits', () => {
     let f = fightWith(2, 12, stance(50, null));
     f = dealDamage(f, 7, false, 'hammer').fight;
     f = dealDamage(f, 3).fight;
-    expect(f.hits).toEqual([{ amount: 3, by: null }, { amount: 7, by: 'hammer' }]);
+    expect(f.hits).toEqual([{ amount: 3, by: null, shield: 0 }, { amount: 7, by: 'hammer', shield: 0 }]);
     expect(text(dealDamage(f, 4, false, 'great-bow').events[0])).toBe('Great Bow: hit 4');
+  });
+
+  it('remembers what Shield took off a hit', () => {
+    let f = fightWith(2, 12, { ...stance(50, null), shield: 2 });
+    f = dealDamage(f, 9).fight;
+    f = dealDamage(f, 1).fight;
+    expect(f.hits).toEqual([{ amount: 1, by: null, shield: 1 }, { amount: 9, by: null, shield: 2 }]);
   });
 
   it('a wound from a card is not a hit', () => {

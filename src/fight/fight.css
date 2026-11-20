@@ -48,6 +48,7 @@
   font-variant-numeric: tabular-nums;
 }
 .hit-chip .class-icon { width: 16px; height: 16px; margin-left: -4px; }
+.hit-chip .hit-shield { color: var(--muted); font-weight: 600; }
 .hit-chip.newest { border-color: var(--ink); border-width: 2px; }
 .alert-text { color: var(--alert); margin: 0; }
 

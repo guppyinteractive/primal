@@ -124,12 +124,17 @@ describe('upgrades', () => {
   });
 
   it('fight v7 → v8 gives each hit no hunter', () => {
-    const out = upgrade('fight', { version: 7, data: { fight: { hits: [5, 10] }, undo: [{ hits: [10] }], campaignId: null } });
+    const out = UPGRADES.fight[6]({ fight: { hits: [5, 10] }, undo: [{ hits: [10] }], campaignId: null });
     expect(out).toEqual({
       fight: { hits: [{ amount: 5, by: null }, { amount: 10, by: null }] },
       undo: [{ hits: [{ amount: 10, by: null }] }],
       campaignId: null,
     });
+  });
+
+  it('fight v8 → v9 gives each hit no shield', () => {
+    const out = upgrade('fight', { version: 8, data: { fight: { hits: [{ amount: 5, by: null }] }, undo: [{ hits: [] }], campaignId: null } });
+    expect(out).toEqual({ fight: { hits: [{ amount: 5, by: null, shield: 0 }] }, undo: [{ hits: [] }], campaignId: null });
   });
 
     it('refuses versions it does not know', () => {

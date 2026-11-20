@@ -79,10 +79,11 @@ export const HUNTER_CLASSES = {
 } as const;
 export type HunterClass = keyof typeof HUNTER_CLASSES;
 
-/** A hit as entered, and the class of the hunter who dealt it, if picked. */
+/** A hit as entered, the class of the hunter who dealt it, if picked, and what Shield took off. */
 export interface Hit {
   amount: number;
   by: HunterClass | null;
+  shield: number;
 }
 
 /** How many recent hits a fight remembers. */
@@ -235,7 +236,6 @@ export function dealDamage(fight: Fight, amount: number, useVulnerable = false, 
   const f = clone(fight);
   const events: FightEvent[] = [];
   if (f.outcome || amount <= 0) return { fight: f, events };
-  f.hits = [{ amount, by }, ...f.hits].slice(0, HITS_KEPT);
   const doubled = useVulnerable && hasState(f, 'vulnerable');
   if (doubled) {
     f.states = f.states.filter((s) => s !== 'vulnerable');
@@ -244,6 +244,7 @@ export function dealDamage(fight: Fight, amount: number, useVulnerable = false, 
   const raw = doubled ? amount * 2 : amount;
   const shield = Math.min(raw, currentStance(f)?.shield ?? 0);
   f.damage += raw - shield;
+  f.hits = [{ amount, by, shield }, ...f.hits].slice(0, HITS_KEPT);
   events.push({ kind: 'hit', base: amount, doubled, shield, amount: raw - shield, by });
   resolveWounds(f, events);
   return { fight: f, events };

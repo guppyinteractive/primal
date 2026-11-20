@@ -349,7 +349,7 @@ function boardView(f: Fight): string {
           <span class="note">${stance ? `toughness ${t} (${stance.toughness} × ${f.players})` : ''}</span>${keywords}</div>
         <div class="bar"><span style="width:${dmgPct}%"></span></div>
         <div class="hits" aria-label="Last hits, newest first">${f.hits.map((h, i) =>
-          `<span class="hit-chip${i ? '' : ' newest'}"${h.by ? ` title="${E.HUNTER_CLASSES[h.by]}"` : ''}>${h.by ? classIcon(h.by) : ''}${h.amount}</span>`).join('')}</div>
+          `<span class="hit-chip${i ? '' : ' newest'}"${h.by ? ` title="${E.HUNTER_CLASSES[h.by]}"` : ''}>${h.by ? classIcon(h.by) : ''}${h.amount}${h.shield ? `<span class="hit-shield">−${h.shield}</span>` : ''}</span>`).join('')}</div>
         ${f.stancePending && f.damage ? `<p class="note alert-text">${f.damage} damage carried over</p>` : ''}
         <p class="note tap-hint">Tap to enter a hit</p>
       </section>
